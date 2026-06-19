@@ -293,7 +293,7 @@ function About() {
               "Pro-grade strength equipment",
               "Personalised coaching",
               "Functional & cardio zones",
-              "Clean changing & wash areas",
+              "Clean changing & SAUNA ROOMS",
             ].map((f) => (
               <li key={f} className="flex items-start gap-3 text-foreground">
                 <span className="mt-1 grid h-6 w-6 place-items-center rounded-full bg-foreground text-background">
@@ -447,7 +447,7 @@ function Gallery() {
     { src: dumbbells, alt: "Dumbbell rack", cls: "aspect-square md:col-span-2" },
     { src: ropes, alt: "Battle rope training", cls: "aspect-square" },
     { src: changingRoom.url, alt: "Changing room area", cls: "aspect-square" },
-    { src: washroom.url, alt: "Member wash area", cls: "aspect-square" },
+    { src: washroom.url, alt: "SAUNA ROOM", cls: "aspect-square" },
   ];
   return (
     <section id="gallery" className="py-28">
