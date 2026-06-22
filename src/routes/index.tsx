@@ -548,7 +548,7 @@ const FAQS = [
   { q: "Do I need prior experience to join?", a: "Not at all. Whether you're a complete beginner or an experienced lifter, our coaches will guide you with programming that fits your level." },
   { q: "What are the membership options?", a: "We offer monthly, quarterly and annual plans. Please call or visit us for current pricing and personalised plan suggestions." },
   { q: "Do you offer personal training?", a: "Yes. Certified trainers provide one-on-one sessions tailored to strength, fat-loss, muscle building and functional goals." },
-  { q: "What are your timings?", a: "Mon–Sat: 6:00 AM – 10:00 PM. Sunday: 7:00 AM – 12:00 PM. Holiday timings may vary — please call to confirm." },
+  { q: "What are your timings?", a: "Mon–Sat: 5:30 AM – 12:00 AM. Sunday: 7:00 AM – 12:00 PM. Holiday timings may vary — please call to confirm." },
 ];
 function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
@@ -641,7 +641,7 @@ function Contact() {
               </span>
               <div>
                 <div className="font-display text-xs tracking-[0.3em] uppercase text-muted-foreground">Hours</div>
-                <div className="mt-1 text-foreground">Mon–Sat 6:00 AM – 10:00 PM</div>
+                <div className="mt-1 text-foreground">Mon–Sat 5:30 AM – 12:00 AM</div>
                 <div className="text-muted-foreground text-sm">Sun 7:00 AM – 12:00 PM</div>
               </div>
             </div>
