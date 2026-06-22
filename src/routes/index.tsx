@@ -763,7 +763,7 @@ function Footer() {
         <div>
           <div className="font-display text-xs tracking-[0.3em] uppercase text-silver">Hours</div>
           <ul className="mt-5 space-y-2 text-sm text-muted-foreground">
-            <li>Mon–Sat · 6:00 AM – 10:00 PM</li>
+            <li>Mon–Sat · 5:30 AM – 12:00 AM</li>
             <li>Sunday · 7:00 AM – 12:00 PM</li>
           </ul>
           <div className="mt-6 flex gap-3">
