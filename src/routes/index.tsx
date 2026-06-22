@@ -491,20 +491,20 @@ function Gallery() {
 /* ------------------------------ TESTIMONIALS ------------------------------ */
 const TESTI = [
   {
-    name: "Rohan M.",
-    role: "Member · 2 yrs",
+    name: "Asavari Gamare",
+    role: "Reviewed a month ago",
     quote:
-      "The energy here is unmatched. The coaches push you the right way and the equipment is top-tier. Lost 12 kg in 6 months.",
+      "The energy here is unmatched. The coaches push you the right way and the equipment is top-tier.",
   },
   {
-    name: "Priya S.",
-    role: "Member · 1 yr",
+    name: "Pavan Khairnar",
+    role: "Local Guide · 8 reviews · 10 photos · 2 months ago",
     quote:
       "Walked in nervous, walked out hooked. The team made strength training accessible and the atmosphere is genuinely motivating.",
   },
   {
-    name: "Aakash R.",
-    role: "Member · 3 yrs",
+    name: "Aavishkar Kolambe",
+    role: "3 reviews · 2 months ago",
     quote:
       "Hands down the most disciplined gym in Dadar. Programming is solid, equipment well-maintained. Highly recommend.",
   },
