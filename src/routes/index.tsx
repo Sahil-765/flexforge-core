@@ -1,17 +1,23 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState, type ComponentPropsWithoutRef, type FormEvent } from "react";
 import {
   Dumbbell, Flame, HeartPulse, Activity, Users, Zap, Star, Menu, X,
   Phone, MapPin, Mail, Clock, Instagram, Facebook, MessageCircle, ChevronDown,
   Check, ArrowRight,
 } from "lucide-react";
+import { toast } from "sonner";
+import { z } from "zod";
+
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useReveal } from "@/hooks/use-reveal";
-import logo from "@/assets/logo.png.asset.json";
+import { leadFormSchema } from "@/lib/lead-schema";
+import logo from "@/assets/logo.png";
 import heroImg from "@/assets/hero.jpg";
-import cardioRoom from "@/assets/cardio-room.jpg.asset.json";
-import equipment from "@/assets/equipment.jpg.asset.json";
-import changingRoom from "@/assets/changing-room.jpg.asset.json";
-import washroom from "@/assets/washroom.jpg.asset.json";
+import cardioRoom from "@/assets/cardio-room.png";
+import equipment from "@/assets/equipment.png";
+import changingRoom from "@/assets/changing-room.png";
+import washroom from "@/assets/washroom.png";
 import barbell from "@/assets/gallery-barbell.jpg";
 import dumbbells from "@/assets/gallery-dumbbells.jpg";
 import ropes from "@/assets/gallery-ropes.jpg";
@@ -19,8 +25,24 @@ import ropes from "@/assets/gallery-ropes.jpg";
 const PHONE = "+919326510792";
 const PHONE_DISPLAY = "+91 93265 10792";
 const WHATSAPP = "https://wa.me/919326510792";
+const CONTACT_ENDPOINT = "/api/contact";
 const ADDRESS =
   "Ground Floor, Shivshakti Hsg Soc, Shop No 22, SK Bole Rd, beside Sahakari Bhandar Mall, Mumbai, Maharashtra 400028";
+const LOGO_FALLBACK_SRC =
+  "data:image/svg+xml;charset=UTF-8," +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Muscle Flex logo">
+      <defs>
+        <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0%" stop-color="#f4efe5" />
+          <stop offset="100%" stop-color="#8d8478" />
+        </linearGradient>
+      </defs>
+      <rect width="96" height="96" rx="48" fill="#141414" />
+      <circle cx="48" cy="48" r="39" fill="none" stroke="url(#g)" stroke-width="4" />
+      <path d="M26 62V34h8l14 18 14-18h8v28h-8V47L48 64 34 47v15z" fill="url(#g)" />
+    </svg>
+  `);
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -77,6 +99,81 @@ const NAV = [
   { id: "contact", label: "Contact" },
 ];
 
+type SafeImageProps = ComponentPropsWithoutRef<"img"> & {
+  fallbackSrc: string;
+};
+
+const contactPlanOptions = [
+  { label: "Monthly", value: "monthly" },
+  { label: "Quarterly", value: "quarterly" },
+  { label: "Annual", value: "annual" },
+  { label: "Not sure yet", value: "unsure" },
+];
+
+type ContactFormState = {
+  full_name: string;
+  email: string;
+  phone: string;
+  message: string;
+  preferred_plan: string;
+};
+
+type ContactErrors = Partial<Record<keyof ContactFormState | "form", string>>;
+
+function getInitialContactState(): ContactFormState {
+  return {
+    full_name: "",
+    email: "",
+    phone: "",
+    message: "",
+    preferred_plan: "",
+  };
+}
+
+function getAnalyticsContext() {
+  if (typeof window === "undefined") {
+    return {
+      page_url: "",
+      referrer: "",
+      utm_source: "",
+      utm_medium: "",
+      utm_campaign: "",
+    };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  return {
+    page_url: window.location.href,
+    referrer: document.referrer,
+    utm_source: params.get("utm_source") ?? "",
+    utm_medium: params.get("utm_medium") ?? "",
+    utm_campaign: params.get("utm_campaign") ?? "",
+  };
+}
+
+function mapFieldErrors(errors: z.ZodIssue[]) {
+  const mapped: ContactErrors = {};
+
+  for (const issue of errors) {
+    const field = issue.path[0];
+    if (typeof field === "string" && field in getInitialContactState()) {
+      mapped[field as keyof ContactFormState] = issue.message;
+    }
+  }
+
+  return mapped;
+}
+
+function SafeImage({ src, fallbackSrc, alt, ...props }: SafeImageProps) {
+  const [currentSrc, setCurrentSrc] = useState(src);
+
+  useEffect(() => {
+    setCurrentSrc(src);
+  }, [src]);
+
+  return <img {...props} src={currentSrc} alt={alt} onError={() => setCurrentSrc(fallbackSrc)} />;
+}
+
 function HomePage() {
   useReveal();
   return (
@@ -109,16 +206,15 @@ function Nav() {
   }, []);
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-        scrolled
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${scrolled
           ? "py-3 bg-background/85 backdrop-blur-lg border-b border-border"
           : "py-5 bg-transparent"
-      }`}
+        }`}
     >
       <div className="mx-auto max-w-7xl px-5 sm:px-8 flex items-center justify-between gap-6">
         <a href="#home" className="flex items-center gap-3 shrink-0">
           <img
-            src={logo.url}
+            src={logo}
             alt="Muscle Flex Fitness Club"
             className="h-11 w-11 rounded-full ring-1 ring-silver/30"
             width={44}
@@ -138,13 +234,16 @@ function Nav() {
               className="font-display text-sm tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300 relative group"
             >
               {n.label}
-              <span className="absolute left-0 -bottom-1 h-px w-0 bg-gradient-to-r from-transparent via-foreground to-transparent group-hover:w-full transition-all duration-300" />
+              <span className="absolute left-0 -bottom-1 h-px w-0 bg-linear-to-r from-transparent via-foreground to-transparent group-hover:w-full transition-all duration-300" />
             </a>
           ))}
         </nav>
 
         <div className="flex items-center gap-3">
-          <a href={`tel:${PHONE}`} className="hidden md:inline-flex btn-outline !py-2.5 !px-5 !text-xs">
+          <Link to="/admin" className="hidden md:inline-flex btn-outline py-2.5! px-5! text-xs!">
+            Admin
+          </Link>
+          <a href={`tel:${PHONE}`} className="hidden md:inline-flex btn-outline py-2.5! px-5! text-xs!">
             <Phone className="h-4 w-4" /> Call
           </a>
           <button
@@ -159,9 +258,8 @@ function Nav() {
 
       {/* mobile menu */}
       <div
-        className={`lg:hidden overflow-hidden transition-all duration-500 ${
-          open ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
-        }`}
+        className={`lg:hidden overflow-hidden transition-all duration-500 ${open ? "max-h-150 opacity-100" : "max-h-0 opacity-0"
+          }`}
       >
         <div className="mx-5 mt-4 glass rounded-xl p-6 flex flex-col gap-4">
           {NAV.map((n) => (
@@ -177,6 +275,9 @@ function Nav() {
           <a href={`tel:${PHONE}`} className="btn-primary mt-2">
             <Phone className="h-4 w-4" /> Call Now
           </a>
+          <Link to="/admin" onClick={() => setOpen(false)} className="btn-outline mt-2 text-center justify-center">
+            Admin Portal
+          </Link>
         </div>
       </div>
     </header>
@@ -187,15 +288,16 @@ function Nav() {
 function Hero() {
   return (
     <section id="home" className="relative min-h-screen flex items-center pt-28">
-      <img
+      <SafeImage
         src={heroImg}
         alt="Athlete training with barbell in dark gym"
         className="absolute inset-0 h-full w-full object-cover"
+        fallbackSrc={heroImg}
         width={1920}
         height={1280}
       />
       <div className="absolute inset-0 bg-gradient-hero" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_left,_oklch(0.13_0_0/0.4),_transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_left,oklch(0.13_0_0/0.4),transparent_60%)]" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 py-20 w-full">
         <div className="max-w-3xl">
@@ -261,14 +363,15 @@ function About() {
     <section id="about" className="relative py-28 bg-gradient-dark">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-16 items-center">
         <div className="reveal relative">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-lg">
-            <img
-              src={cardioRoom.url}
+          <div className="relative aspect-4/5 overflow-hidden rounded-lg">
+            <SafeImage
+              src={cardioRoom}
               alt="Muscle Flex cardio training zone"
               className="h-full w-full object-cover"
               loading="lazy"
+              fallbackSrc={heroImg}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-background/60 to-transparent" />
           </div>
           <div className="hidden md:block absolute -bottom-6 -right-6 glass rounded-lg p-6 w-64">
             <div className="font-display text-3xl text-metal">Since Day One</div>
@@ -388,11 +491,10 @@ function Membership() {
           {PLANS.map((p) => (
             <div
               key={p.name}
-              className={`reveal relative rounded-lg p-8 transition-all duration-500 ${
-                p.featured
+              className={`reveal relative rounded-lg p-8 transition-all duration-500 ${p.featured
                   ? "bg-foreground text-background scale-100 md:scale-105 shadow-card"
                   : "bg-card border border-border hover:border-silver/40"
-              }`}
+                }`}
             >
               {p.featured && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-background text-foreground font-display text-[10px] tracking-[0.3em] uppercase rounded-full border border-silver/40">
@@ -400,9 +502,8 @@ function Membership() {
                 </div>
               )}
               <div
-                className={`font-display text-xs tracking-[0.3em] uppercase ${
-                  p.featured ? "text-background/60" : "text-muted-foreground"
-                }`}
+                className={`font-display text-xs tracking-[0.3em] uppercase ${p.featured ? "text-background/60" : "text-muted-foreground"
+                  }`}
               >
                 {p.tag}
               </div>
@@ -422,11 +523,10 @@ function Membership() {
               </ul>
               <a
                 href="#contact"
-                className={`mt-10 block text-center font-display text-sm tracking-[0.25em] uppercase py-3 rounded-md transition-all duration-300 ${
-                  p.featured
+                className={`mt-10 block text-center font-display text-sm tracking-[0.25em] uppercase py-3 rounded-md transition-all duration-300 ${p.featured
                     ? "bg-background text-foreground hover:bg-secondary"
                     : "border border-silver/40 text-foreground hover:bg-foreground hover:text-background"
-                }`}
+                  }`}
               >
                 Contact Us
               </a>
@@ -441,13 +541,13 @@ function Membership() {
 /* ------------------------------ GALLERY ------------------------------ */
 function Gallery() {
   const tiles = [
-    { src: equipment.url, alt: "Strength training equipment", cls: "md:col-span-2 md:row-span-2 aspect-square md:aspect-auto" },
-    { src: cardioRoom.url, alt: "Cardio training room", cls: "aspect-square" },
+    { src: equipment, alt: "Strength training equipment", cls: "md:col-span-2 md:row-span-2 aspect-square md:aspect-auto" },
+    { src: cardioRoom, alt: "Cardio training room", cls: "aspect-square" },
     { src: barbell, alt: "Chalked grip on barbell", cls: "aspect-square" },
     { src: dumbbells, alt: "Dumbbell rack", cls: "aspect-square md:col-span-2" },
     { src: ropes, alt: "Battle rope training", cls: "aspect-square" },
-    { src: changingRoom.url, alt: "Changing room area", cls: "aspect-square" },
-    { src: washroom.url, alt: "SAUNA ROOM", cls: "aspect-square" },
+    { src: changingRoom, alt: "Changing room area", cls: "aspect-square" },
+    { src: washroom, alt: "SAUNA ROOM", cls: "aspect-square" },
   ];
   return (
     <section id="gallery" className="py-28">
@@ -464,19 +564,20 @@ function Gallery() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[minmax(180px,_auto)] gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[minmax(180px,auto)] gap-3">
           {tiles.map((t, i) => (
             <div
               key={i}
               className={`reveal relative overflow-hidden rounded-lg group ${t.cls}`}
             >
-              <img
+              <SafeImage
                 src={t.src}
                 alt={t.alt}
                 loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-110"
+                className="h-full w-full object-cover transition-transform duration-1200 ease-out group-hover:scale-110"
+                fallbackSrc={heroImg}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-linear-to-t from-background/70 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
               <div className="absolute inset-x-0 bottom-0 p-4 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500">
                 <div className="font-display text-xs tracking-[0.3em] uppercase text-silver">{t.alt}</div>
               </div>
@@ -567,9 +668,8 @@ function FAQ() {
             return (
               <div
                 key={i}
-                className={`reveal border rounded-lg overflow-hidden transition-all duration-300 ${
-                  isOpen ? "border-silver/40 bg-card" : "border-border bg-card/40"
-                }`}
+                className={`reveal border rounded-lg overflow-hidden transition-all duration-300 ${isOpen ? "border-silver/40 bg-card" : "border-border bg-card/40"
+                  }`}
               >
                 <button
                   onClick={() => setOpen(isOpen ? null : i)}
@@ -577,15 +677,13 @@ function FAQ() {
                 >
                   <span className="font-display text-base sm:text-lg tracking-wider uppercase">{f.q}</span>
                   <ChevronDown
-                    className={`h-5 w-5 shrink-0 text-silver transition-transform duration-300 ${
-                      isOpen ? "rotate-180" : ""
-                    }`}
+                    className={`h-5 w-5 shrink-0 text-silver transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
                 <div
-                  className={`grid transition-all duration-500 ${
-                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                  }`}
+                  className={`grid transition-all duration-500 ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                    }`}
                 >
                   <div className="overflow-hidden">
                     <p className="px-6 pb-6 text-muted-foreground leading-relaxed">{f.a}</p>
@@ -602,7 +700,70 @@ function FAQ() {
 
 /* ------------------------------ CONTACT ------------------------------ */
 function Contact() {
-  const [sent, setSent] = useState(false);
+  const [formState, setFormState] = useState<ContactFormState>(getInitialContactState());
+  const [errors, setErrors] = useState<ContactErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
+
+  const submitForm = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrors({});
+
+    const analytics = getAnalyticsContext();
+    const parsed = leadFormSchema.safeParse({
+      ...formState,
+      source: "website-contact-form",
+      ...analytics,
+      honeypot,
+    });
+
+    if (!parsed.success) {
+      setErrors(mapFieldErrors(parsed.error.issues));
+      toast.error("Please fix the highlighted fields.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(CONTACT_ENDPOINT, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...parsed.data,
+          source: "website-contact-form",
+          ...analytics,
+          honeypot,
+        }),
+      });
+
+      const result = (await response.json().catch(() => null)) as
+        | { ok?: boolean; error?: string; fieldErrors?: Record<string, string[] | undefined> }
+        | null;
+
+      if (!response.ok) {
+        if (response.status === 400 && result?.fieldErrors) {
+          const mappedErrors: ContactErrors = {};
+          for (const [field, messages] of Object.entries(result.fieldErrors)) {
+            if (field in getInitialContactState() && messages?.[0]) {
+              mappedErrors[field as keyof ContactFormState] = messages[0];
+            }
+          }
+          setErrors(mappedErrors);
+        }
+        throw new Error(result?.error ?? "Unable to submit your enquiry right now.");
+      }
+
+      toast.success("Thanks. Your enquiry has been sent.");
+      setFormState(getInitialContactState());
+      setHoneypot("");
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <section id="contact" className="relative py-28 bg-secondary/20 border-t border-border">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-12">
@@ -660,62 +821,131 @@ function Contact() {
           </div>
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const fd = new FormData(e.currentTarget);
-            const msg = encodeURIComponent(
-              `Hi Muscle Flex, I'm ${fd.get("name")} (${fd.get("phone")}). ${fd.get("message")}`,
-            );
-            window.open(`${WHATSAPP}?text=${msg}`, "_blank");
-            setSent(true);
-            (e.target as HTMLFormElement).reset();
-          }}
-          className="reveal glass rounded-lg p-8 sm:p-10 self-start"
-        >
+        <form onSubmit={submitForm} className="reveal glass rounded-lg p-8 sm:p-10 self-start">
           <div className="font-display text-2xl uppercase tracking-wider">Send a Message</div>
-          <p className="mt-2 text-sm text-muted-foreground">We'll reply via WhatsApp or a call back.</p>
+          <p className="mt-2 text-sm text-muted-foreground">We’ll respond with membership details and next steps.</p>
 
           <div className="mt-8 space-y-5">
-            <Field name="name" label="Full Name" required />
-            <Field name="phone" label="Phone Number" type="tel" required />
-            <Field name="email" label="Email (optional)" type="email" />
+            <Field
+              name="full_name"
+              label="Full Name"
+              value={formState.full_name}
+              onChange={(value) => setFormState((current) => ({ ...current, full_name: value }))}
+              required
+              error={errors.full_name}
+              autoComplete="name"
+            />
+            <Field
+              name="email"
+              label="Email"
+              type="email"
+              value={formState.email}
+              onChange={(value) => setFormState((current) => ({ ...current, email: value }))}
+              required
+              error={errors.email}
+              autoComplete="email"
+            />
+            <Field
+              name="phone"
+              label="Phone Number"
+              type="tel"
+              value={formState.phone}
+              onChange={(value) => setFormState((current) => ({ ...current, phone: value }))}
+              required
+              error={errors.phone}
+              autoComplete="tel"
+            />
             <div>
-              <label className="font-display text-xs tracking-[0.3em] uppercase text-muted-foreground">
+              <label htmlFor="preferred_plan" className="font-display text-xs tracking-[0.3em] uppercase text-muted-foreground">
+                Preferred Plan
+              </label>
+              <select
+                id="preferred_plan"
+                name="preferred_plan"
+                value={formState.preferred_plan}
+                onChange={(event) => setFormState((current) => ({ ...current, preferred_plan: event.target.value }))}
+                className="mt-2 w-full bg-background/60 border border-border rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-silver transition-colors"
+              >
+                <option value="">Select a plan</option>
+                {contactPlanOptions.map((plan) => (
+                  <option key={plan.value} value={plan.value}>
+                    {plan.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="message" className="font-display text-xs tracking-[0.3em] uppercase text-muted-foreground">
                 Your Message
               </label>
-              <textarea
+              <Textarea
+                id="message"
                 name="message"
-                required
                 rows={4}
-                className="mt-2 w-full bg-background/60 border border-border rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-silver transition-colors resize-none"
-                placeholder="I'd like to know about membership plans…"
+                value={formState.message}
+                onChange={(event) => setFormState((current) => ({ ...current, message: event.target.value }))}
+                className="mt-2 resize-none bg-background/60"
+                placeholder="I’d like to know about membership plans..."
               />
+              {errors.message ? <p className="mt-2 text-sm text-red-400">{errors.message}</p> : null}
             </div>
+            <input
+              type="text"
+              name="website"
+              value={honeypot}
+              onChange={(event) => setHoneypot(event.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="absolute left-[-9999px] h-px w-px opacity-0"
+            />
           </div>
 
-          <button type="submit" className="btn-primary mt-8 w-full">
-            Send Enquiry <ArrowRight className="h-4 w-4" />
+          <button type="submit" disabled={isSubmitting} className="btn-primary mt-8 w-full disabled:opacity-60">
+            {isSubmitting ? "Sending..." : "Send Enquiry"} <ArrowRight className="h-4 w-4" />
           </button>
-          {sent && (
-            <p className="mt-4 text-sm text-silver text-center">Opening WhatsApp — talk to you shortly.</p>
-          )}
+          {errors.form ? <p className="mt-4 text-sm text-red-400 text-center">{errors.form}</p> : null}
         </form>
       </div>
     </section>
   );
 }
 
-function Field({ name, label, type = "text", required }: { name: string; label: string; type?: string; required?: boolean }) {
+function Field({
+  name,
+  label,
+  type = "text",
+  required,
+  value,
+  onChange,
+  error,
+  autoComplete,
+}: {
+  name: keyof ContactFormState;
+  label: string;
+  type?: string;
+  required?: boolean;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  autoComplete?: string;
+}) {
   return (
     <div>
-      <label className="font-display text-xs tracking-[0.3em] uppercase text-muted-foreground">{label}</label>
-      <input
+      <label htmlFor={name} className="font-display text-xs tracking-[0.3em] uppercase text-muted-foreground">
+        {label}
+      </label>
+      <Input
+        id={name}
         name={name}
         type={type}
         required={required}
-        className="mt-2 w-full bg-background/60 border border-border rounded-md px-4 py-3 text-foreground focus:outline-none focus:border-silver transition-colors"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        autoComplete={autoComplete}
+        className="mt-2 bg-background/60"
       />
+      {error ? <p className="mt-2 text-sm text-red-400">{error}</p> : null}
     </div>
   );
 }
@@ -727,7 +957,7 @@ function Footer() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8 grid md:grid-cols-4 gap-12">
         <div className="md:col-span-1">
           <div className="flex items-center gap-3">
-            <img src={logo.url} alt="" className="h-12 w-12 rounded-full ring-1 ring-silver/30" />
+            <SafeImage src={logo} alt="" className="h-12 w-12 rounded-full ring-1 ring-silver/30" fallbackSrc={LOGO_FALLBACK_SRC} />
             <div className="leading-tight">
               <div className="font-display tracking-[0.18em]">MUSCLE FLEX</div>
               <div className="font-display text-[10px] tracking-[0.4em] text-muted-foreground">FITNESS CLUB</div>
