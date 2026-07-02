@@ -1,4 +1,4 @@
-import { n as PHONE, t as hero_default } from "./hero-D9pJB7sj.js";
+import { a as PHONE, c as hero_default, i as NAV, n as CONTACT_ENDPOINT, o as PHONE_DISPLAY, r as LOGO_FALLBACK_SRC, s as WHATSAPP, t as ADDRESS } from "./constants-CEPkHB5q.js";
 import { t as useReveal } from "./use-reveal-BE9TtH02.js";
 import { t as leadFormSchema } from "./lead-schema-D0d44KbQ.js";
 import * as React from "react";
@@ -9,192 +9,10 @@ import { toast } from "sonner";
 import { Activity, ArrowRight, Check, ChevronDown, Clock, Dumbbell, Facebook, Flame, HeartPulse, Instagram, Mail, MapPin, Menu, MessageCircle, Phone, Star, Users, X, Zap } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-//#region src/lib/utils.ts
-function cn(...inputs) {
-	return twMerge(clsx(inputs));
-}
-//#endregion
-//#region src/components/ui/input.tsx
-var Input = React.forwardRef(({ className, type, ...props }, ref) => {
-	return /* @__PURE__ */ jsx("input", {
-		type,
-		className: cn("flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm", className),
-		ref,
-		...props
-	});
-});
-Input.displayName = "Input";
-//#endregion
-//#region src/components/ui/textarea.tsx
-var Textarea = React.forwardRef(({ className, ...props }, ref) => {
-	return /* @__PURE__ */ jsx("textarea", {
-		className: cn("flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm", className),
-		ref,
-		...props
-	});
-});
-Textarea.displayName = "Textarea";
-//#endregion
 //#region src/assets/logo.png
 var logo_default = "/assets/logo-VbnyfW-G.png";
 //#endregion
-//#region src/assets/cardio-room.png
-var cardio_room_default = "/assets/cardio-room-D0t66TfA.png";
-//#endregion
-//#region src/assets/equipment.png
-var equipment_default = "/assets/equipment-Bq6U9win.png";
-//#endregion
-//#region src/assets/changing-room.png
-var changing_room_default = "/assets/changing-room-DheWl1Pj.png";
-//#endregion
-//#region src/assets/washroom.png
-var washroom_default = "/assets/washroom-Dugc8Pa4.png";
-//#endregion
-//#region src/assets/gallery-barbell.jpg
-var gallery_barbell_default = "/assets/gallery-barbell-CGki0sYb.jpg";
-//#endregion
-//#region src/assets/gallery-dumbbells.jpg
-var gallery_dumbbells_default = "/assets/gallery-dumbbells-DCUW-Td4.jpg";
-//#endregion
-//#region src/assets/gallery-ropes.jpg
-var gallery_ropes_default = "/assets/gallery-ropes-BRVbkhUm.jpg";
-//#endregion
-//#region src/routes/index.tsx?tsr-split=component
-var PHONE_DISPLAY = "+91 93265 10792";
-var WHATSAPP = "https://wa.me/919326510792";
-var CONTACT_ENDPOINT = "/api/contact";
-var ADDRESS = "Ground Floor, Shivshakti Hsg Soc, Shop No 22, SK Bole Rd, beside Sahakari Bhandar Mall, Mumbai, Maharashtra 400028";
-var LOGO_FALLBACK_SRC = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Muscle Flex logo">
-      <defs>
-        <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0%" stop-color="#f4efe5" />
-          <stop offset="100%" stop-color="#8d8478" />
-        </linearGradient>
-      </defs>
-      <rect width="96" height="96" rx="48" fill="#141414" />
-      <circle cx="48" cy="48" r="39" fill="none" stroke="url(#g)" stroke-width="4" />
-      <path d="M26 62V34h8l14 18 14-18h8v28h-8V47L48 64 34 47v15z" fill="url(#g)" />
-    </svg>
-  `);
-var NAV = [
-	{
-		id: "home",
-		label: "Home"
-	},
-	{
-		id: "about",
-		label: "About"
-	},
-	{
-		id: "membership",
-		label: "Membership"
-	},
-	{
-		id: "services",
-		label: "Services"
-	},
-	{
-		id: "gallery",
-		label: "Gallery"
-	},
-	{
-		id: "testimonials",
-		label: "Testimonials"
-	},
-	{
-		id: "faq",
-		label: "FAQ"
-	},
-	{
-		id: "contact",
-		label: "Contact"
-	}
-];
-var contactPlanOptions = [
-	{
-		label: "Monthly",
-		value: "monthly"
-	},
-	{
-		label: "Quarterly",
-		value: "quarterly"
-	},
-	{
-		label: "Annual",
-		value: "annual"
-	},
-	{
-		label: "Not sure yet",
-		value: "unsure"
-	}
-];
-function getInitialContactState() {
-	return {
-		full_name: "",
-		email: "",
-		phone: "",
-		message: "",
-		preferred_plan: ""
-	};
-}
-function getAnalyticsContext() {
-	if (typeof window === "undefined") return {
-		page_url: "",
-		referrer: "",
-		utm_source: "",
-		utm_medium: "",
-		utm_campaign: ""
-	};
-	const params = new URLSearchParams(window.location.search);
-	return {
-		page_url: window.location.href,
-		referrer: document.referrer,
-		utm_source: params.get("utm_source") ?? "",
-		utm_medium: params.get("utm_medium") ?? "",
-		utm_campaign: params.get("utm_campaign") ?? ""
-	};
-}
-function mapFieldErrors(errors) {
-	const mapped = {};
-	for (const issue of errors) {
-		const field = issue.path[0];
-		if (typeof field === "string" && field in getInitialContactState()) mapped[field] = issue.message;
-	}
-	return mapped;
-}
-function SafeImage({ src, fallbackSrc, alt, ...props }) {
-	const [currentSrc, setCurrentSrc] = useState(src);
-	useEffect(() => {
-		setCurrentSrc(src);
-	}, [src]);
-	return /* @__PURE__ */ jsx("img", {
-		...props,
-		src: currentSrc,
-		alt,
-		onError: () => setCurrentSrc(fallbackSrc)
-	});
-}
-function HomePage() {
-	useReveal();
-	return /* @__PURE__ */ jsxs("div", {
-		className: "min-h-screen bg-background text-foreground overflow-x-hidden",
-		children: [
-			/* @__PURE__ */ jsx(Nav, {}),
-			/* @__PURE__ */ jsx(Hero, {}),
-			/* @__PURE__ */ jsx(Stats, {}),
-			/* @__PURE__ */ jsx(About, {}),
-			/* @__PURE__ */ jsx(Services, {}),
-			/* @__PURE__ */ jsx(Membership, {}),
-			/* @__PURE__ */ jsx(Gallery, {}),
-			/* @__PURE__ */ jsx(Testimonials, {}),
-			/* @__PURE__ */ jsx(FAQ, {}),
-			/* @__PURE__ */ jsx(Contact, {}),
-			/* @__PURE__ */ jsx(Footer, {}),
-			/* @__PURE__ */ jsx(FloatingWhatsApp, {})
-		]
-	});
-}
+//#region src/components/sections/Nav.tsx
 function Nav() {
 	const [scrolled, setScrolled] = useState(false);
 	const [open, setOpen] = useState(false);
@@ -286,6 +104,24 @@ function Nav() {
 		})]
 	});
 }
+//#endregion
+//#region src/components/ui/safe-image.tsx
+function SafeImage({ src, fallbackSrc, alt, ...props }) {
+	const [currentSrc, setCurrentSrc] = useState(src);
+	useEffect(() => {
+		setCurrentSrc(src);
+	}, [src]);
+	return /* @__PURE__ */ jsx("img", {
+		...props,
+		src: currentSrc,
+		alt,
+		onError: () => {
+			if (currentSrc !== fallbackSrc) setCurrentSrc(fallbackSrc);
+		}
+	});
+}
+//#endregion
+//#region src/components/sections/Hero.tsx
 function Hero() {
 	return /* @__PURE__ */ jsxs("section", {
 		id: "home",
@@ -324,7 +160,8 @@ function Hero() {
 						/* @__PURE__ */ jsxs("p", {
 							className: "reveal mt-8 max-w-xl text-lg text-muted-foreground leading-relaxed",
 							children: [
-								"Train with dedication at ",
+								"Train with dedication at",
+								" ",
 								/* @__PURE__ */ jsx("span", {
 									className: "text-foreground",
 									children: "Muscle Flex Fitness Club"
@@ -356,6 +193,8 @@ function Hero() {
 		]
 	});
 }
+//#endregion
+//#region src/components/sections/Stats.tsx
 var STATS = [
 	{
 		label: "Modern Equipment",
@@ -392,6 +231,11 @@ function Stats() {
 		})
 	});
 }
+//#endregion
+//#region src/assets/cardio-room.png
+var cardio_room_default = "/assets/cardio-room-D0t66TfA.png";
+//#endregion
+//#region src/components/sections/About.tsx
 function About() {
 	return /* @__PURE__ */ jsx("section", {
 		id: "about",
@@ -469,6 +313,8 @@ function About() {
 		})
 	});
 }
+//#endregion
+//#region src/components/sections/Services.tsx
 var SERVICES = [
 	{
 		icon: Dumbbell,
@@ -546,6 +392,8 @@ function Services() {
 		})
 	});
 }
+//#endregion
+//#region src/components/sections/Membership.tsx
 var PLANS = [
 	{
 		name: "Monthly",
@@ -646,6 +494,26 @@ function Membership() {
 		})
 	});
 }
+//#endregion
+//#region src/assets/equipment.png
+var equipment_default = "/assets/equipment-Bq6U9win.png";
+//#endregion
+//#region src/assets/gallery-barbell.jpg
+var gallery_barbell_default = "/assets/gallery-barbell-CGki0sYb.jpg";
+//#endregion
+//#region src/assets/gallery-dumbbells.jpg
+var gallery_dumbbells_default = "/assets/gallery-dumbbells-DCUW-Td4.jpg";
+//#endregion
+//#region src/assets/gallery-ropes.jpg
+var gallery_ropes_default = "/assets/gallery-ropes-BRVbkhUm.jpg";
+//#endregion
+//#region src/assets/changing-room.png
+var changing_room_default = "/assets/changing-room-DheWl1Pj.png";
+//#endregion
+//#region src/assets/washroom.png
+var washroom_default = "/assets/washroom-Dugc8Pa4.png";
+//#endregion
+//#region src/components/sections/Gallery.tsx
 function Gallery() {
 	return /* @__PURE__ */ jsx("section", {
 		id: "gallery",
@@ -729,20 +597,22 @@ function Gallery() {
 		})
 	});
 }
+//#endregion
+//#region src/components/sections/Testimonials.tsx
 var TESTI = [
 	{
-		name: "Rohan M.",
-		role: "Member · 2 yrs",
-		quote: "The energy here is unmatched. The coaches push you the right way and the equipment is top-tier. Lost 12 kg in 6 months."
+		name: "Asavari Gamare",
+		role: "Reviewed a month ago",
+		quote: "The energy here is unmatched. The coaches push you the right way and the equipment is top-tier."
 	},
 	{
-		name: "Priya S.",
-		role: "Member · 1 yr",
+		name: "Pavan Khairnar",
+		role: "Local Guide · 8 reviews · 10 photos · 2 months ago",
 		quote: "Walked in nervous, walked out hooked. The team made strength training accessible and the atmosphere is genuinely motivating."
 	},
 	{
-		name: "Aakash R.",
-		role: "Member · 3 yrs",
+		name: "Aavishkar Kolambe",
+		role: "3 reviews · 2 months ago",
 		quote: "Hands down the most disciplined gym in Dadar. Programming is solid, equipment well-maintained. Highly recommend."
 	}
 ];
@@ -797,6 +667,8 @@ function Testimonials() {
 		})
 	});
 }
+//#endregion
+//#region src/components/sections/FAQ.tsx
 var FAQS = [
 	{
 		q: "Where is Muscle Flex Fitness Club located?",
@@ -816,7 +688,7 @@ var FAQS = [
 	},
 	{
 		q: "What are your timings?",
-		a: "Mon–Sat: 6:00 AM – 10:00 PM. Sunday: 7:00 AM – 12:00 PM. Holiday timings may vary — please call to confirm."
+		a: "Mon–Sat: 5:30 AM – 12:00 AM. Sunday: 7:00 AM – 12:00 PM. Holiday timings may vary — please call to confirm."
 	}
 ];
 function FAQ() {
@@ -866,6 +738,86 @@ function FAQ() {
 			})]
 		})
 	});
+}
+//#endregion
+//#region src/lib/utils.ts
+function cn(...inputs) {
+	return twMerge(clsx(inputs));
+}
+//#endregion
+//#region src/components/ui/input.tsx
+var Input = React.forwardRef(({ className, type, ...props }, ref) => {
+	return /* @__PURE__ */ jsx("input", {
+		type,
+		className: cn("flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm", className),
+		ref,
+		...props
+	});
+});
+Input.displayName = "Input";
+//#endregion
+//#region src/components/ui/textarea.tsx
+var Textarea = React.forwardRef(({ className, ...props }, ref) => {
+	return /* @__PURE__ */ jsx("textarea", {
+		className: cn("flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm", className),
+		ref,
+		...props
+	});
+});
+Textarea.displayName = "Textarea";
+//#endregion
+//#region src/components/sections/Contact.tsx
+var contactPlanOptions = [
+	{
+		label: "Monthly",
+		value: "monthly"
+	},
+	{
+		label: "Quarterly",
+		value: "quarterly"
+	},
+	{
+		label: "Annual",
+		value: "annual"
+	},
+	{
+		label: "Not sure yet",
+		value: "unsure"
+	}
+];
+function getInitialContactState() {
+	return {
+		full_name: "",
+		email: "",
+		phone: "",
+		message: "",
+		preferred_plan: ""
+	};
+}
+function getAnalyticsContext() {
+	if (typeof window === "undefined") return {
+		page_url: "",
+		referrer: "",
+		utm_source: "",
+		utm_medium: "",
+		utm_campaign: ""
+	};
+	const params = new URLSearchParams(window.location.search);
+	return {
+		page_url: window.location.href,
+		referrer: document.referrer,
+		utm_source: params.get("utm_source") ?? "",
+		utm_medium: params.get("utm_medium") ?? "",
+		utm_campaign: params.get("utm_campaign") ?? ""
+	};
+}
+function mapFieldErrors(errors) {
+	const mapped = {};
+	for (const issue of errors) {
+		const field = issue.path[0];
+		if (typeof field === "string" && field in getInitialContactState()) mapped[field] = issue.message;
+	}
+	return mapped;
 }
 function Contact() {
 	const [formState, setFormState] = useState(getInitialContactState());
@@ -985,7 +937,7 @@ function Contact() {
 								}),
 								/* @__PURE__ */ jsx("div", {
 									className: "mt-1 text-foreground",
-									children: "Mon–Sat 6:00 AM – 10:00 PM"
+									children: "Mon–Sat 5:30 AM – 12:00 AM"
 								}),
 								/* @__PURE__ */ jsx("div", {
 									className: "text-muted-foreground text-sm",
@@ -1158,6 +1110,8 @@ function Field({ name, label, type = "text", required, value, onChange, error, a
 		}) : null
 	] });
 }
+//#endregion
+//#region src/components/sections/Footer.tsx
 function Footer() {
 	return /* @__PURE__ */ jsxs("footer", {
 		className: "bg-[oklch(0.08_0_0)] border-t border-border pt-20 pb-8",
@@ -1206,9 +1160,9 @@ function Footer() {
 					className: "mt-5 space-y-3 text-sm text-muted-foreground",
 					children: [
 						/* @__PURE__ */ jsxs("li", {
-							className: "flex gap-2",
+							className: "flex gap-2 text-foreground",
 							children: [
-								/* @__PURE__ */ jsx(Phone, { className: "h-4 w-4 mt-0.5 shrink-0" }),
+								/* @__PURE__ */ jsx(Phone, { className: "h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" }),
 								" ",
 								PHONE_DISPLAY
 							]
@@ -1230,7 +1184,7 @@ function Footer() {
 					}),
 					/* @__PURE__ */ jsxs("ul", {
 						className: "mt-5 space-y-2 text-sm text-muted-foreground",
-						children: [/* @__PURE__ */ jsx("li", { children: "Mon–Sat · 6:00 AM – 10:00 PM" }), /* @__PURE__ */ jsx("li", { children: "Sunday · 7:00 AM – 12:00 PM" })]
+						children: [/* @__PURE__ */ jsx("li", { children: "Mon–Sat · 5:30 AM – 12:00 AM" }), /* @__PURE__ */ jsx("li", { children: "Sunday · 7:00 AM – 12:00 PM" })]
 					}),
 					/* @__PURE__ */ jsx("div", {
 						className: "mt-6 flex gap-3",
@@ -1270,6 +1224,8 @@ function Footer() {
 		})]
 	});
 }
+//#endregion
+//#region src/components/sections/FloatingWhatsApp.tsx
 function FloatingWhatsApp() {
 	return /* @__PURE__ */ jsxs("a", {
 		href: WHATSAPP,
@@ -1278,6 +1234,28 @@ function FloatingWhatsApp() {
 		"aria-label": "Chat on WhatsApp",
 		className: "fixed bottom-6 right-6 z-40 grid h-14 w-14 place-items-center rounded-full bg-foreground text-background shadow-2xl hover:scale-110 transition-transform duration-300",
 		children: [/* @__PURE__ */ jsx(MessageCircle, { className: "h-6 w-6" }), /* @__PURE__ */ jsx("span", { className: "absolute inset-0 rounded-full animate-ping bg-foreground/30" })]
+	});
+}
+//#endregion
+//#region src/routes/index.tsx?tsr-split=component
+function HomePage() {
+	useReveal();
+	return /* @__PURE__ */ jsxs("div", {
+		className: "min-h-screen bg-background text-foreground overflow-x-hidden",
+		children: [
+			/* @__PURE__ */ jsx(Nav, {}),
+			/* @__PURE__ */ jsx(Hero, {}),
+			/* @__PURE__ */ jsx(Stats, {}),
+			/* @__PURE__ */ jsx(About, {}),
+			/* @__PURE__ */ jsx(Services, {}),
+			/* @__PURE__ */ jsx(Membership, {}),
+			/* @__PURE__ */ jsx(Gallery, {}),
+			/* @__PURE__ */ jsx(Testimonials, {}),
+			/* @__PURE__ */ jsx(FAQ, {}),
+			/* @__PURE__ */ jsx(Contact, {}),
+			/* @__PURE__ */ jsx(Footer, {}),
+			/* @__PURE__ */ jsx(FloatingWhatsApp, {})
+		]
 	});
 }
 //#endregion

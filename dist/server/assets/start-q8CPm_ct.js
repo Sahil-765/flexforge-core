@@ -1,14 +1,35 @@
 import { t as renderErrorPage } from "../server.js";
 import { n as createMiddleware, t as createStart } from "./createStart-Dt05N14y.js";
 import { t as leadFormSchema } from "./lead-schema-D0d44KbQ.js";
+import { z } from "zod";
 import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
+//#region src/lib/env.ts
+var envSchema = z.object({
+	SUPABASE_URL: z.string().trim().url({ message: "SUPABASE_URL must be a valid URL" }),
+	SUPABASE_SERVICE_ROLE_KEY: z.string().trim().min(20, { message: "SUPABASE_SERVICE_ROLE_KEY must be a valid service role key" }),
+	ADMIN_EMAIL: z.string().trim().email().default("admin@muscleflex.club"),
+	ADMIN_PASSWORD: z.string().trim().min(6).default("flexforge-admin-2026")
+});
+function getEnv() {
+	const result = envSchema.safeParse({
+		SUPABASE_URL: process.env.SUPABASE_URL,
+		SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+		ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+		ADMIN_PASSWORD: process.env.ADMIN_PASSWORD
+	});
+	if (!result.success) {
+		const issues = result.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
+		console.error("❌ Environment configuration error:", issues);
+		throw new Error(`Environment configuration error: ${issues}`);
+	}
+	return result.data;
+}
+//#endregion
 //#region src/lib/supabase-server.ts
-var supabaseUrl = process.env.SUPABASE_URL;
-var supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 function getSupabaseServiceClient() {
-	if (!supabaseUrl || !supabaseServiceRoleKey) throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables.");
-	return createClient(supabaseUrl, supabaseServiceRoleKey, { auth: {
+	const env = getEnv();
+	return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: {
 		persistSession: false,
 		autoRefreshToken: false
 	} });
@@ -133,7 +154,6 @@ var contactMiddleware = createMiddleware().server(async ({ request, next }) => {
 		}, { status: 500 });
 	}
 });
-var SESSION_SECRET = process.env.SUPABASE_SERVICE_ROLE_KEY || "muscleflex-default-fallback-key-32chars";
 function hashPassword(password) {
 	const salt = crypto.randomBytes(16).toString("hex");
 	return `${salt}:${crypto.pbkdf2Sync(password, salt, 1e3, 64, "sha512").toString("hex")}`;
@@ -147,7 +167,9 @@ function verifyPassword(password, storedValue) {
 		return false;
 	}
 }
+var adminsSeeded = false;
 async function ensureAdminsSeeded(supabase) {
+	if (adminsSeeded) return;
 	try {
 		const { count, error } = await supabase.from("admins").select("*", {
 			count: "exact",
@@ -159,21 +181,27 @@ async function ensureAdminsSeeded(supabase) {
 		}
 		if (count === 0) {
 			console.log("No admins found in database. Seeding default super admin...");
-			const defaultEmail = process.env.ADMIN_EMAIL || "admin@muscleflex.club";
-			const hash = hashPassword(process.env.ADMIN_PASSWORD || "flexforge-admin-2026");
+			const env = getEnv();
+			const defaultEmail = env.ADMIN_EMAIL;
+			const defaultPassword = env.ADMIN_PASSWORD;
+			const hash = hashPassword(defaultPassword);
 			const { error: insertError } = await supabase.from("admins").insert({
 				email: defaultEmail.toLowerCase().trim(),
 				password_hash: hash
 			});
 			if (insertError) console.error("Failed to seed default admin", insertError);
-			else console.log(`Default admin seeded successfully: ${defaultEmail}`);
-		}
+			else {
+				console.log(`Default admin seeded successfully: ${defaultEmail}`);
+				adminsSeeded = true;
+			}
+		} else adminsSeeded = true;
 	} catch (err) {
 		console.error("Catastrophic error during admin seeding check", err);
 	}
 }
 function encryptToken(payload) {
-	const key = crypto.scryptSync(SESSION_SECRET, "salt", 32);
+	const secret = getEnv().SUPABASE_SERVICE_ROLE_KEY;
+	const key = crypto.scryptSync(secret, "salt", 32);
 	const iv = crypto.randomBytes(16);
 	const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
 	let encrypted = cipher.update(payload, "utf8", "hex");
@@ -184,7 +212,8 @@ function decryptToken(token) {
 	try {
 		const [ivHex, encrypted] = token.split(".");
 		if (!ivHex || !encrypted) return null;
-		const key = crypto.scryptSync(SESSION_SECRET, "salt", 32);
+		const secret = getEnv().SUPABASE_SERVICE_ROLE_KEY;
+		const key = crypto.scryptSync(secret, "salt", 32);
 		const iv = Buffer.from(ivHex, "hex");
 		const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
 		let decrypted = decipher.update(encrypted, "hex", "utf8");

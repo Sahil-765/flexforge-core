@@ -122,6 +122,7 @@ with check (false);
 ```
 
 Important:
+
 - Inserts should come only from server-side code using the Supabase service role key.
 - Manage leads initially from the Supabase dashboard.
 - If you want stricter admin control later, add a dedicated admin auth/role model before exposing a custom dashboard.
@@ -132,6 +133,7 @@ Important:
 - Also exposed via footer social icon and floating WhatsApp FAB.
 
 Important:
+
 - This is not WhatsApp Business API.
 - No webhook handling, message status callbacks, or bot automation are implemented.
 

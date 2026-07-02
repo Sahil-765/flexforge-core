@@ -1,4 +1,4 @@
-import { n as PHONE, t as hero_default } from "./hero-D9pJB7sj.js";
+import { a as PHONE, c as hero_default } from "./constants-CEPkHB5q.js";
 import { useEffect } from "react";
 import { HeadContent, Link, Outlet, Scripts, createFileRoute, createRootRouteWithContext, createRouter, lazyRouteComponent, useRouter } from "@tanstack/react-router";
 import { jsx, jsxs } from "react/jsx-runtime";
@@ -182,7 +182,7 @@ var Route$1 = createFileRoute("/admin")({
 });
 //#endregion
 //#region src/routes/index.tsx
-var $$splitComponentImporter = () => import("./routes-DJyLhpy-.js");
+var $$splitComponentImporter = () => import("./routes-DrYI3OxM.js");
 var Route = createFileRoute("/")({
 	head: () => ({
 		meta: [

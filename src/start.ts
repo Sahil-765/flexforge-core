@@ -1,9 +1,11 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 import crypto from "crypto";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 import { leadFormSchema } from "./lib/lead-schema";
 import { renderErrorPage } from "./lib/error-page";
 import { getSupabaseServiceClient } from "./lib/supabase-server";
+import { getEnv } from "./lib/env";
 
 const CONTACT_PATH = "/api/contact";
 
@@ -169,11 +171,12 @@ const contactMiddleware = createMiddleware().server(async ({ request, next }) =>
     return jsonResponse({ ok: true }, { status: 201 });
   } catch (error) {
     console.error("Unexpected contact handler error", error);
-    return jsonResponse({ ok: false, error: "Something went wrong while submitting your enquiry." }, { status: 500 });
+    return jsonResponse(
+      { ok: false, error: "Something went wrong while submitting your enquiry." },
+      { status: 500 },
+    );
   }
 });
-
-const SESSION_SECRET = process.env.SUPABASE_SERVICE_ROLE_KEY || "muscleflex-default-fallback-key-32chars";
 
 function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -192,12 +195,15 @@ function verifyPassword(password: string, storedValue: string): boolean {
   }
 }
 
-async function ensureAdminsSeeded(supabase: any) {
+let adminsSeeded = false;
+
+async function ensureAdminsSeeded(supabase: SupabaseClient) {
+  if (adminsSeeded) return;
   try {
     const { count, error } = await supabase
       .from("admins")
       .select("*", { count: "exact", head: true });
-    
+
     if (error) {
       console.error("Error checking admins count", error);
       return;
@@ -205,21 +211,23 @@ async function ensureAdminsSeeded(supabase: any) {
 
     if (count === 0) {
       console.log("No admins found in database. Seeding default super admin...");
-      const defaultEmail = process.env.ADMIN_EMAIL || "admin@muscleflex.club";
-      const defaultPassword = process.env.ADMIN_PASSWORD || "flexforge-admin-2026";
+      const env = getEnv();
+      const defaultEmail = env.ADMIN_EMAIL;
+      const defaultPassword = env.ADMIN_PASSWORD;
       const hash = hashPassword(defaultPassword);
-      const { error: insertError } = await supabase
-        .from("admins")
-        .insert({
-          email: defaultEmail.toLowerCase().trim(),
-          password_hash: hash,
-        });
-      
+      const { error: insertError } = await supabase.from("admins").insert({
+        email: defaultEmail.toLowerCase().trim(),
+        password_hash: hash,
+      });
+
       if (insertError) {
         console.error("Failed to seed default admin", insertError);
       } else {
         console.log(`Default admin seeded successfully: ${defaultEmail}`);
+        adminsSeeded = true;
       }
+    } else {
+      adminsSeeded = true;
     }
   } catch (err) {
     console.error("Catastrophic error during admin seeding check", err);
@@ -227,7 +235,8 @@ async function ensureAdminsSeeded(supabase: any) {
 }
 
 function encryptToken(payload: string): string {
-  const key = crypto.scryptSync(SESSION_SECRET, "salt", 32);
+  const secret = getEnv().SUPABASE_SERVICE_ROLE_KEY;
+  const key = crypto.scryptSync(secret, "salt", 32);
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
   let encrypted = cipher.update(payload, "utf8", "hex");
@@ -239,7 +248,8 @@ function decryptToken(token: string): string | null {
   try {
     const [ivHex, encrypted] = token.split(".");
     if (!ivHex || !encrypted) return null;
-    const key = crypto.scryptSync(SESSION_SECRET, "salt", 32);
+    const secret = getEnv().SUPABASE_SERVICE_ROLE_KEY;
+    const key = crypto.scryptSync(secret, "salt", 32);
     const iv = Buffer.from(ivHex, "hex");
     const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
     let decrypted = decipher.update(encrypted, "hex", "utf8");
@@ -279,7 +289,10 @@ const adminMiddleware = createMiddleware().server(async ({ request, next }) => {
   // 1. POST /api/admin/login
   if (request.method === "POST" && url.pathname === "/api/admin/login") {
     try {
-      const body = (await request.json().catch(() => ({}))) as { email?: string; password?: string };
+      const body = (await request.json().catch(() => ({}))) as {
+        email?: string;
+        password?: string;
+      };
       if (!body.email || !body.password) {
         return jsonResponse({ ok: false, error: "Missing email or password" }, { status: 400 });
       }
@@ -297,7 +310,10 @@ const adminMiddleware = createMiddleware().server(async ({ request, next }) => {
 
       if (error) {
         console.error("Login database error", error);
-        return jsonResponse({ ok: false, error: "Database error during login check" }, { status: 500 });
+        return jsonResponse(
+          { ok: false, error: "Database error during login check" },
+          { status: 500 },
+        );
       }
 
       if (!admin || !verifyPassword(password, admin.password_hash)) {
@@ -318,11 +334,14 @@ const adminMiddleware = createMiddleware().server(async ({ request, next }) => {
           headers: {
             "Set-Cookie": `admin_session=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`,
           },
-        }
+        },
       );
     } catch (error) {
       console.error("Login failed", error);
-      return jsonResponse({ ok: false, error: "An unexpected login error occurred" }, { status: 500 });
+      return jsonResponse(
+        { ok: false, error: "An unexpected login error occurred" },
+        { status: 500 },
+      );
     }
   }
 
@@ -335,14 +354,17 @@ const adminMiddleware = createMiddleware().server(async ({ request, next }) => {
         headers: {
           "Set-Cookie": `admin_session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`,
         },
-      }
+      },
     );
   }
 
   // ALL other /api/admin/* endpoints require session verification
   const session = verifyAdminSession(request);
   if (!session) {
-    return jsonResponse({ ok: false, error: "Unauthorized access. Please login first." }, { status: 401 });
+    return jsonResponse(
+      { ok: false, error: "Unauthorized access. Please login first." },
+      { status: 401 },
+    );
   }
 
   // 3. GET /api/admin/leads
@@ -355,13 +377,19 @@ const adminMiddleware = createMiddleware().server(async ({ request, next }) => {
 
       if (error) {
         console.error("Failed to fetch leads", error);
-        return jsonResponse({ ok: false, error: "Failed to fetch leads from database" }, { status: 500 });
+        return jsonResponse(
+          { ok: false, error: "Failed to fetch leads from database" },
+          { status: 500 },
+        );
       }
 
       return jsonResponse({ ok: true, leads });
     } catch (error) {
       console.error("Error in leads endpoint", error);
-      return jsonResponse({ ok: false, error: "An unexpected database error occurred" }, { status: 500 });
+      return jsonResponse(
+        { ok: false, error: "An unexpected database error occurred" },
+        { status: 500 },
+      );
     }
   }
 
@@ -386,7 +414,10 @@ const adminMiddleware = createMiddleware().server(async ({ request, next }) => {
       return jsonResponse({ ok: true });
     } catch (error) {
       console.error("Error in update status endpoint", error);
-      return jsonResponse({ ok: false, error: "An unexpected status update error occurred" }, { status: 500 });
+      return jsonResponse(
+        { ok: false, error: "An unexpected status update error occurred" },
+        { status: 500 },
+      );
     }
   }
 
@@ -408,7 +439,10 @@ const adminMiddleware = createMiddleware().server(async ({ request, next }) => {
       return jsonResponse({ ok: true });
     } catch (error) {
       console.error("Error in delete endpoint", error);
-      return jsonResponse({ ok: false, error: "An unexpected deletion error occurred" }, { status: 500 });
+      return jsonResponse(
+        { ok: false, error: "An unexpected deletion error occurred" },
+        { status: 500 },
+      );
     }
   }
 
@@ -428,14 +462,20 @@ const adminMiddleware = createMiddleware().server(async ({ request, next }) => {
       return jsonResponse({ ok: true, admins: adminsList });
     } catch (error) {
       console.error("Error listing admins", error);
-      return jsonResponse({ ok: false, error: "An unexpected database error occurred" }, { status: 500 });
+      return jsonResponse(
+        { ok: false, error: "An unexpected database error occurred" },
+        { status: 500 },
+      );
     }
   }
 
   // 7. POST /api/admin/create-admin
   if (request.method === "POST" && url.pathname === "/api/admin/create-admin") {
     try {
-      const body = (await request.json().catch(() => ({}))) as { email?: string; password?: string };
+      const body = (await request.json().catch(() => ({}))) as {
+        email?: string;
+        password?: string;
+      };
       if (!body.email || !body.password) {
         return jsonResponse({ ok: false, error: "Missing email or password" }, { status: 400 });
       }
@@ -448,7 +488,10 @@ const adminMiddleware = createMiddleware().server(async ({ request, next }) => {
       }
 
       if (newPassword.length < 6) {
-        return jsonResponse({ ok: false, error: "Password must be at least 6 characters long" }, { status: 400 });
+        return jsonResponse(
+          { ok: false, error: "Password must be at least 6 characters long" },
+          { status: 400 },
+        );
       }
 
       const hash = hashPassword(newPassword);
@@ -459,16 +502,25 @@ const adminMiddleware = createMiddleware().server(async ({ request, next }) => {
 
       if (error) {
         if (error.code === "23505") {
-          return jsonResponse({ ok: false, error: "Email is already registered as an admin" }, { status: 400 });
+          return jsonResponse(
+            { ok: false, error: "Email is already registered as an admin" },
+            { status: 400 },
+          );
         }
         console.error("Failed to insert new admin", error);
-        return jsonResponse({ ok: false, error: "Failed to save new admin credentials" }, { status: 500 });
+        return jsonResponse(
+          { ok: false, error: "Failed to save new admin credentials" },
+          { status: 500 },
+        );
       }
 
       return jsonResponse({ ok: true });
     } catch (error) {
       console.error("Error creating admin", error);
-      return jsonResponse({ ok: false, error: "An unexpected admin creation error occurred" }, { status: 500 });
+      return jsonResponse(
+        { ok: false, error: "An unexpected admin creation error occurred" },
+        { status: 500 },
+      );
     }
   }
 

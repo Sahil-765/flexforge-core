@@ -1,11 +1,7 @@
 import { z } from "zod";
 
 const trimmedText = (minimum: number, maximum: number) =>
-  z
-    .string()
-    .trim()
-    .min(minimum)
-    .max(maximum);
+  z.string().trim().min(minimum).max(maximum);
 
 export const leadFormSchema = z.object({
   full_name: trimmedText(2, 120),

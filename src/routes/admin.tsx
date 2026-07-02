@@ -1,9 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
 import {
-  Lock, LogOut, Users, Clock, CheckCircle, Archive, Trash2,
-  ExternalLink, MessageSquare, Calendar, Search, ShieldAlert,
-  Loader2, RefreshCw, ChevronRight, X, Mail, UserCheck
+  Lock,
+  LogOut,
+  Users,
+  Clock,
+  CheckCircle,
+  Archive,
+  Trash2,
+  ExternalLink,
+  MessageSquare,
+  Calendar,
+  Search,
+  ShieldAlert,
+  Loader2,
+  RefreshCw,
+  ChevronRight,
+  X,
+  Mail,
+  UserCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useReveal } from "@/hooks/use-reveal";
@@ -12,8 +27,8 @@ export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
       { title: "Admin Portal | Muscle Flex Fitness Club" },
-      { name: "robots", content: "noindex, nofollow" }
-    ]
+      { name: "robots", content: "noindex, nofollow" },
+    ],
   }),
   component: AdminPage,
 });
@@ -171,7 +186,7 @@ function AdminPage() {
 
       if (res.ok) {
         setLeads((prev) =>
-          prev.map((lead) => (lead.id === id ? { ...lead, status: newStatus } : lead))
+          prev.map((lead) => (lead.id === id ? { ...lead, status: newStatus } : lead)),
         );
         if (selectedLead?.id === id) {
           setSelectedLead((prev) => (prev ? { ...prev, status: newStatus } : null));
@@ -411,7 +426,9 @@ function AdminPage() {
               className="p-2 text-muted-foreground hover:text-foreground rounded-md border border-border hover:bg-secondary/40 transition-colors"
               title="Refresh lists"
             >
-              <RefreshCw className={`h-4 w-4 ${isLoadingLeads || isLoadingAdmins ? "animate-spin text-silver" : ""}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${isLoadingLeads || isLoadingAdmins ? "animate-spin text-silver" : ""}`}
+              />
             </button>
             <button
               onClick={handleLogout}
@@ -461,12 +478,30 @@ function AdminPage() {
             {/* Analytics Summary Widget */}
             <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {[
-                { label: "Total Submissions", value: stats.total, icon: Users, color: "text-blue-400" },
+                {
+                  label: "Total Submissions",
+                  value: stats.total,
+                  icon: Users,
+                  color: "text-blue-400",
+                },
                 { label: "New Leads", value: stats.newCount, icon: Clock, color: "text-amber-400" },
-                { label: "In Progress / Contacted", value: stats.contacted, icon: RefreshCw, color: "text-indigo-400" },
-                { label: "Archived / Success", value: stats.archived, icon: Archive, color: "text-emerald-400" }
+                {
+                  label: "In Progress / Contacted",
+                  value: stats.contacted,
+                  icon: RefreshCw,
+                  color: "text-indigo-400",
+                },
+                {
+                  label: "Archived / Success",
+                  value: stats.archived,
+                  icon: Archive,
+                  color: "text-emerald-400",
+                },
               ].map((card, idx) => (
-                <div key={idx} className="glass rounded-xl p-5 border border-border flex items-center justify-between">
+                <div
+                  key={idx}
+                  className="glass rounded-xl p-5 border border-border flex items-center justify-between"
+                >
                   <div>
                     <div className="font-display text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
                       {card.label}
@@ -510,7 +545,7 @@ function AdminPage() {
                   { id: "all", label: "All Leads" },
                   { id: "new", label: "New" },
                   { id: "contacted", label: "Contacted" },
-                  { id: "archived", label: "Archived" }
+                  { id: "archived", label: "Archived" },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -572,12 +607,15 @@ function AdminPage() {
                     </thead>
                     <tbody className="divide-y divide-border/60">
                       {filteredLeads.map((lead) => {
-                        const submissionDate = new Date(lead.created_at).toLocaleDateString("en-IN", {
-                          day: "numeric",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        });
+                        const submissionDate = new Date(lead.created_at).toLocaleDateString(
+                          "en-IN",
+                          {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        );
 
                         return (
                           <tr
@@ -596,23 +634,32 @@ function AdminPage() {
                             </td>
                             <td className="px-6 py-4">
                               <div className="font-semibold text-foreground">{lead.full_name}</div>
-                              <div className="text-xs text-muted-foreground mt-0.5">{lead.email}</div>
-                              <div className="text-xs text-muted-foreground/80 mt-0.5">{lead.phone}</div>
+                              <div className="text-xs text-muted-foreground mt-0.5">
+                                {lead.email}
+                              </div>
+                              <div className="text-xs text-muted-foreground/80 mt-0.5">
+                                {lead.phone}
+                              </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-display font-semibold uppercase tracking-wider ${
-                                lead.preferred_plan === "annual"
-                                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                  : lead.preferred_plan === "quarterly"
-                                  ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
-                                  : lead.preferred_plan === "monthly"
-                                  ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                                  : "bg-muted text-muted-foreground border border-border"
-                              }`}>
+                              <span
+                                className={`px-2.5 py-1 rounded-full text-[10px] font-display font-semibold uppercase tracking-wider ${
+                                  lead.preferred_plan === "annual"
+                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                    : lead.preferred_plan === "quarterly"
+                                      ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                                      : lead.preferred_plan === "monthly"
+                                        ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                                        : "bg-muted text-muted-foreground border border-border"
+                                }`}
+                              >
                                 {lead.preferred_plan || "Unsure"}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                            <td
+                              className="px-6 py-4 whitespace-nowrap"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <select
                                 value={lead.status}
                                 disabled={isUpdatingId === lead.id}
@@ -621,16 +668,25 @@ function AdminPage() {
                                   lead.status === "new"
                                     ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
                                     : lead.status === "contacted"
-                                    ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
-                                    : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                                      ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+                                      : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
                                 }`}
                               >
-                                <option value="new" className="bg-card text-foreground">New</option>
-                                <option value="contacted" className="bg-card text-foreground">Contacted</option>
-                                <option value="archived" className="bg-card text-foreground">Archived</option>
+                                <option value="new" className="bg-card text-foreground">
+                                  New
+                                </option>
+                                <option value="contacted" className="bg-card text-foreground">
+                                  Contacted
+                                </option>
+                                <option value="archived" className="bg-card text-foreground">
+                                  Archived
+                                </option>
                               </select>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
+                            <td
+                              className="px-6 py-4 whitespace-nowrap text-right"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <div className="flex items-center justify-end gap-2">
                                 <button
                                   onClick={() => setSelectedLead(lead)}
@@ -717,7 +773,7 @@ function AdminPage() {
                             month: "long",
                             year: "numeric",
                             hour: "2-digit",
-                            minute: "2-digit"
+                            minute: "2-digit",
                           })}
                         </td>
                       </tr>
@@ -769,15 +825,17 @@ function AdminPage() {
                     Preferred Plan
                   </div>
                   <div className="mt-1">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-display font-semibold uppercase tracking-wider ${
-                      selectedLead.preferred_plan === "annual"
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        : selectedLead.preferred_plan === "quarterly"
-                        ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
-                        : selectedLead.preferred_plan === "monthly"
-                        ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                        : "bg-muted text-muted-foreground border border-border"
-                    }`}>
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-display font-semibold uppercase tracking-wider ${
+                        selectedLead.preferred_plan === "annual"
+                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          : selectedLead.preferred_plan === "quarterly"
+                            ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                            : selectedLead.preferred_plan === "monthly"
+                              ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                              : "bg-muted text-muted-foreground border border-border"
+                      }`}
+                    >
                       {selectedLead.preferred_plan || "Unsure"}
                     </span>
                   </div>
@@ -833,7 +891,10 @@ function AdminPage() {
                     <span className="text-muted-foreground font-medium uppercase tracking-wide">
                       Page Referrer:
                     </span>{" "}
-                    <span className="text-foreground truncate block max-w-full" title={selectedLead.referrer || "Direct"}>
+                    <span
+                      className="text-foreground truncate block max-w-full"
+                      title={selectedLead.referrer || "Direct"}
+                    >
                       {selectedLead.referrer || "Direct / None"}
                     </span>
                   </div>
@@ -894,13 +955,19 @@ function AdminPage() {
                     selectedLead.status === "new"
                       ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
                       : selectedLead.status === "contacted"
-                      ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
-                      : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                        ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+                        : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
                   }`}
                 >
-                  <option value="new" className="bg-card text-foreground">New</option>
-                  <option value="contacted" className="bg-card text-foreground">Contacted</option>
-                  <option value="archived" className="bg-card text-foreground">Archived</option>
+                  <option value="new" className="bg-card text-foreground">
+                    New
+                  </option>
+                  <option value="contacted" className="bg-card text-foreground">
+                    Contacted
+                  </option>
+                  <option value="archived" className="bg-card text-foreground">
+                    Archived
+                  </option>
                 </select>
               </div>
 
